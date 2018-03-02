@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, Callback
 from sklearn.model_selection import KFold
 import sys
+import csv
 
 np.random.seed(42)
 
@@ -12,7 +13,8 @@ reader = ImageReader()
 name_pullbacks_x = 'PULLBACKS_X_GIRAFFE.csv'
 name_pullbacks_y = 'PULLBACKS_Y_GIRAFFE.csv'
 name_pullbacks_names = 'PULLBACKS_NAMES_GIRAFFE.csv'
-for i in range(0, 6):
+allress = []
+for i in range(1, 4):
 	fisize = pow(2,i)
 	for j in range (0, 7):
 		nfilter = pow(2,j)
@@ -152,7 +154,20 @@ for i in range(0, 6):
 			current_fold+=1
 			del net
 
-		print np.mean(tr_accs,axis=0)
-		print np.mean(ts_accs,axis=0)
-		print np.mean(precisions,axis=0)
-		print np.mean(recalls,axis=0)
+		fmet = []
+		fmet.append(nfilter)
+		fmet.append(fisize)
+		fmet.append(np.mean(tr_accs,axis=0))
+		print fmet[2]
+		fmet.append(np.mean(ts_accs,axis=0))
+		print fmet[3]
+		fmet.append(np.mean(precisions,axis=0))
+		print fmet[4]
+		fmet.append(np.mean(recalls,axis=0))
+		print fmet[5]
+		allress.append(fmet)
+
+
+with open("resultsAll.csv","w+") as my_csv:
+    csvWriter = csv.writer(my_csv,delimiter=',')
+    csvWriter.writerows(allress)
