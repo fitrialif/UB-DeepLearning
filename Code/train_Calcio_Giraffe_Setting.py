@@ -166,8 +166,6 @@ for i in range(2, 4):
 		fmet.append(np.mean(recalls,axis=0))
 		print fmet[5]
 		allress.append(fmet)
-
-
-with open("resultsAll.csv","w+") as my_csv:
-    csvWriter = csv.writer(my_csv,delimiter=',')
-    csvWriter.writerows(allress)
+		with open("resultsAll.csv","w+") as my_csv:
+		    csvWriter = csv.writer(my_csv,delimiter=',')
+		    csvWriter.writerows(allress)
