@@ -14,7 +14,7 @@ name_pullbacks_x = 'PULLBACKS_X_GIRAFFE.csv'
 name_pullbacks_y = 'PULLBACKS_Y_GIRAFFE.csv'
 name_pullbacks_names = 'PULLBACKS_NAMES_GIRAFFE.csv'
 allress = []
-for i in range(1, 4):
+for i in range(2, 4):
 	fisize = pow(2,i)
 	for j in range (0, 7):
 		nfilter = pow(2,j)
