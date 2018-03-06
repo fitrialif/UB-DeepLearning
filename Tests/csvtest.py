@@ -4,6 +4,9 @@ from matplotlib import pyplot as PLT
 from matplotlib import cm as CM
 from matplotlib import mlab as ML
 import numpy as NP
+allData = []
+XD = []
+YD = []
 def graphGenerator():
 	n = 1e5
 	x = y = NP.linspace(-5, 5, 100)
@@ -24,7 +27,6 @@ def graphGenerator():
 	cb.set_label('mean value')
 	PLT.show() 
 
-allData = []
 def fileReader():
 	count = 1
 	countRow = 0
@@ -44,11 +46,15 @@ def fileReader():
 	        		sumA/=sumCount
 	        		rowData.append(sumA)
 	        	else:
-	        		rowData.append(int(column))
+	        		if(countRow==0):
+	        			YD.append(int(column))
+        			if(countRow==1):
+        				XD.append(int(column))
 	        	countRow+=1
 	    	count+=1
 	    	countRow=0
 	    	allData.append(rowData)
 fileReader()
 print(allData)
-graphGenerator()
+print(XD)
+print(YD)
