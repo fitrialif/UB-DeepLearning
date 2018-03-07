@@ -4,6 +4,7 @@ from matplotlib import pyplot as PLT
 from matplotlib import cm as CM
 from matplotlib import mlab as ML
 import numpy as NP
+import math
 allData = []
 XD = []
 YD = []
@@ -22,7 +23,7 @@ def graphGenerator():
 	PLT.subplot(111)
 
 	PLT.hexbin(XD, YD, C=allData, gridsize=gridsize, cmap=CM.jet, bins=None)
-	PLT.axis([1, 32, 1, 64])
+	PLT.axis([1, 20, 1, 70])
 
 	cb = PLT.colorbar()
 	cb.set_label('mean value')
@@ -47,9 +48,9 @@ def fileReader():
 	        			sumCount+=1
 	        	else:
 	        		if(countRow==0):
-	        			YD.append(int(column))
+	        			YD.append(int(math.log2(column)))
         			if(countRow==1):
-        				XD.append(int(column))
+        				XD.append(int(math.log2(column)))
 	        	countRow+=1
 	    	count+=1
 	    	countRow=0
