@@ -10,14 +10,15 @@ YD = []
 def graphGenerator():
 	n = 1e5
 	x = y = NP.linspace(-5, 5, 100)
-	x=NP.array(XD)
-	y=NP.array(YD)
 	X, Y = NP.meshgrid(x, y)
-	ZD = NP.array(allData)
+	Z1 = ML.bivariate_normal(X, Y, 2, 2, 0, 0)
+	Z2 = ML.bivariate_normal(X, Y, 4, 1, 1, 1)
+	ZD = Z2 - Z1
+	print(ZD)
 	x = X.ravel()
 	y = Y.ravel()
 	z = ZD.ravel()
-	gridsize=100
+	gridsize=30
 	PLT.subplot(111)
 
 	PLT.hexbin(x, y, C=z, gridsize=gridsize, cmap=CM.jet, bins=None)
@@ -54,7 +55,6 @@ def fileReader():
 	    	countRow=0
 	    	allData.append(rowData)
 fileReader()
-graphGenerator()
 print(allData)
 print(XD)
 print(YD)
