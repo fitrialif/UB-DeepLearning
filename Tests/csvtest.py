@@ -41,7 +41,6 @@ def fileReader():
 	        		sumA=0
 	        		num = re.findall("\d+\.\d+", column)
 	        		for floats in num:
-        				print(len(num))
 	        			if(sumCount==99):
 	        				rowData.append(float(floats))
 	        			#sumA+=float(floats)
