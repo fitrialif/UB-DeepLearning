@@ -17,7 +17,7 @@ def graphGenerator():
 	x = X.ravel()
 	y = Y.ravel()
 	z = ZD.ravel()
-	gridsize=30
+	gridsize=100
 	PLT.subplot(111)
 
 	PLT.hexbin(x, y, C=z, gridsize=gridsize, cmap=CM.jet, bins=None)
