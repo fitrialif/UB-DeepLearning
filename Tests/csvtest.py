@@ -37,7 +37,7 @@ def fileReader():
 	    for row in template:
 	    	rowData = []
 	        for column in row:
-	        	if(countRow>1):
+	        	if(countRow==4):
 	        		sumCount=0
 	        		sumA=0
 	        		num = re.findall("\d+\.\d+", column)
