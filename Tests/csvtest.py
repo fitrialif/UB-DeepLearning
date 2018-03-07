@@ -21,8 +21,8 @@ def graphGenerator():
 	gridsize=30
 	PLT.subplot(111)
 
-	PLT.hexbin(x, y, C=z, gridsize=gridsize, cmap=CM.jet, bins=None)
-	PLT.axis([x.min(), x.max(), y.min(), y.max()])
+	PLT.hexbin(XD, YD, C=allData, gridsize=gridsize, cmap=CM.jet, bins=None)
+	PLT.axis([1, 32, 1, 32])
 
 	cb = PLT.colorbar()
 	cb.set_label('mean value')
