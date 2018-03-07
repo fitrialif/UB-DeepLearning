@@ -41,10 +41,12 @@ def fileReader():
 	        		sumA=0
 	        		num = re.findall("\d+\.\d+", column)
 	        		for floats in num:
-	        			sumA+=float(floats)
+	        			if(sumCount==99):
+	        				rowData.append(float(floats))
+	        			#sumA+=float(floats)
 	        			sumCount+=1
-	        		sumA/=sumCount
-	        		rowData.append(sumA)
+	        		#sumA/=sumCount
+	        		#rowData.append(sumA)
 	        	else:
 	        		if(countRow==0):
 	        			YD.append(int(column))
