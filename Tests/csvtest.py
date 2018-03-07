@@ -48,9 +48,9 @@ def fileReader():
 	        			sumCount+=1
 	        	else:
 	        		if(countRow==0):
-	        			YD.append(int(math.log2(column)))
+	        			YD.append(math.log(int(column),2))
         			if(countRow==1):
-        				XD.append(int(math.log2(column)))
+        				XD.append(math.log(int(column),2))
 	        	countRow+=1
 	    	count+=1
 	    	countRow=0
