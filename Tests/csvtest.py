@@ -20,8 +20,8 @@ def graphGenerator():
 	gridsize=30
 	PLT.subplot(111)
 
-	PLT.hexbin(x, y, C=z, gridsize=gridsize, cmap=CM.jet, bins=None)
-	PLT.axis([x.min(), x.max(), y.min(), y.max()])
+	PLT.hexbin(XD, YD, C=allData, gridsize=gridsize, cmap=CM.jet, bins=None)
+	PLT.axis([XD.min(), XD.max(), YD.min(), YD.max()])
 
 	cb = PLT.colorbar()
 	cb.set_label('mean value')
@@ -43,10 +43,7 @@ def fileReader():
 	        		for floats in num:
 	        			if(sumCount==99):
 	        				rowData.append(float(floats))
-	        			#sumA+=float(floats)
 	        			sumCount+=1
-	        		#sumA/=sumCount
-	        		#rowData.append(sumA)
 	        	else:
 	        		if(countRow==0):
 	        			YD.append(int(column))
@@ -57,6 +54,7 @@ def fileReader():
 	    	countRow=0
 	    	allData.append(rowData)
 fileReader()
+graphGenerator()
 print(allData)
 print(XD)
 print(YD)
