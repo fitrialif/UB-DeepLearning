@@ -55,6 +55,7 @@ def fileReader():
 	    	countRow=0
 	    	allData.append(rowData)
 fileReader()
+graphGenerator()
 print(allData)
 print(XD)
 print(YD)
