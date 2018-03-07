@@ -22,7 +22,7 @@ def graphGenerator():
 	PLT.subplot(111)
 
 	PLT.hexbin(XD, YD, C=allData, gridsize=gridsize, cmap=CM.jet, bins=None)
-	PLT.axis([1, 32, 1, 32])
+	PLT.axis([1, 64, 1, 32])
 
 	cb = PLT.colorbar()
 	cb.set_label('mean value')
