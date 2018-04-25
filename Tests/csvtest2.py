@@ -45,26 +45,30 @@ def fileReader():
 	count = 1
 	countRow = 0
 	num = []
-	with open("results4Layer_20180321-02.csv") as filename:
+	with open("results4Layers.csv") as filename:
 	    template=csv.reader(filename)
 	    for row in template:
 	    	rowData = []
 	        for column in row:
-	        	if(countRow==2 or countRow==3):
+	        	if(countRow==4):
 	        		sumCount=0
 	        		sumA=0
 	        		num = re.findall("\d+\.\d+", column)
 	        		for floats in num:
-	        			if(sumCount==49):
+	        			if(sumCount==99):
 	        				rowData.append(float(floats))
 	        			sumCount+=1
+	        	else:
+	        		if(countRow==0):
+	        			YD.append(math.log(int(column),2))
+        			if(countRow==1):
+        				XD.append(math.log(int(column),2))
 	        	countRow+=1
 	    	count+=1
 	    	countRow=0
 	    	allData.append(rowData)
-		with open("results4LForm.csv","w+") as my_csv:
-		    csvWriter = csv.writer(my_csv,delimiter=',')
-		    csvWriter.writerows(allData)
 fileReader()
-graphGenerator()
+heatmapGenerator()
 print(allData)
+print(XD)
+print(YD)

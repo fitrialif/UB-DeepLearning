@@ -5,6 +5,7 @@ from keras.layers import Dense, Concatenate
 from keras.models import load_model, Model
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
+from keras.layers.normalization import BatchNormalization
 
 from keras.preprocessing import image
 from keras.models import load_model
@@ -98,6 +99,43 @@ class UBCNN(object):
             net.save(save_name)
 
         return history
+
+    def train_model_DA(self,X_train, y_train, X_val=[], y_val=[], batch_size=16, n_epochs=1, save_name=None, callbacks=[]):
+	datagen = ImageDataGenerator(
+	    	    featurewise_center=False,  # set input mean to 0 over the dataset
+	    	    samplewise_center=False,  # set each sample mean to 0
+	    	    featurewise_std_normalization=False,  # divide inputs by std of the dataset
+	    	    samplewise_std_normalization=False,  # divide each input by its std
+	    	    zca_whitening=False,  # apply ZCA whitening
+	    	    rotation_range=15,  # randomly rotate images in the range (degrees, 0 to 180)
+	    	    width_shift_range=0,  # randomly shift images horizontally (fraction of total width)
+	    	    height_shift_range=0,  # randomly shift images vertically (fraction of total height)
+	    	    horizontal_flip=True,  # randomly flip images
+	    	    vertical_flip=True)  # randomly flip images
+
+    	datagen.fit(X_train)
+
+        net = self.model
+        history = None
+        print("... training model with RealTime Data Augmentation ...")
+
+	#Start Data Fitting With Augmented DataSet
+
+    	history = net.fit_generator(datagen.flow(X_train, y_train,
+                                         batch_size=batch_size),
+                            epochs=n_epochs,
+                            validation_data=(X_val, y_val),
+                            workers=4,callbacks=callbacks)
+
+        net.trained = True
+
+        if save_name != None:
+            net.save(save_name)
+	return history
+    def save(self,model_path):
+
+        net = self.model
+        net.save(model_path)
 
     def load_model(self,filename):
 
@@ -271,15 +309,12 @@ class ThomasNet_Calcio(UBCNN):
         print("creating ThomasNet for Calcio classification ... ")
         print("... ThomasNet created!")
 
-    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10):
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,size_conv_kernel=10,size_pool_kernel=14,n_neurons=20,nhidden=20,dropout_flag=1,dropout_par=0.5):
 
         I,J = input_shape
-        print("Number of Filters")
-        print(nfilters)
-        print("Filter Size")
-        print(fsize)
+
         net = Sequential()
-        net.add(Conv2D(nfilters, (fsize, fsize), input_shape=(I, J, 1)))
+        net.add(Conv2D(20, (10, 10), input_shape=(I, J, 1)))
         net.add(Activation('relu'))
         net.add(AveragePooling2D(pool_size=(14,14)))
 
@@ -293,6 +328,217 @@ class ThomasNet_Calcio(UBCNN):
         optimizer = Adam()
 
         net.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+
+class MauNet_Calcio(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10):
+        I,J = input_shape
+        net = Sequential()
+
+        net.add(Conv2D(32, (3, 3), input_shape=(I, J, 1), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.25))
+
+        net.add(Conv2D(64, (3, 3),activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.25))
+
+        net.add(Conv2D(64, (3, 3), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.25))
+
+        # net.add(Conv2D(64, (3, 3), activation='relu',padding='same' ))
+        # net.add(MaxPooling2D(pool_size=(2, 2)))
+        # net.add(Dropout(0.4))
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        net.add(Dense(512, activation='relu'))
+        net.add(Dropout(0.25))
+        net.add(Dense(1, activation='sigmoid'))
+        net.summary()
+        net.compile(loss='binary_crossentropy',
+                      optimizer='Adam',
+                      metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+class MauNet_Calcio_3L(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet 3L No BN for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10,dropout=0.4):
+        I,J = input_shape
+        net = Sequential()
+
+        net.add(Conv2D(nfilters, (3, 3), input_shape=(I, J, 1), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        tpt = nfilters/2
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        net.add(Dense(64, activation='relu'))
+        net.add(Dropout(dropout))
+        net.add(Dense(1, activation='sigmoid'))
+        net.summary()
+        net.compile(loss='binary_crossentropy',
+                      optimizer='Adam',
+                      metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+class MauNet_Calcio_3L_BN(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet 3L with BN for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10,dropout=0.4):
+        I,J = input_shape
+        net = Sequential()
+
+        net.add(Conv2D(nfilters, (3, 3), input_shape=(I, J, 1), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        tpt = nfilters/2
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        net.add(Dense(64, activation='relu'))
+        net.add(Dropout(dropout))
+        net.add(Dense(1, activation='sigmoid'))
+        net.summary()
+        net.compile(loss='binary_crossentropy',
+                      optimizer='Adam',
+                      metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+
+class MauNet_Calcio_4L(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet 4L No BN for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10,dropout=0.4):
+        I,J = input_shape
+        net = Sequential()
+
+        net.add(Conv2D(nfilters, (3, 3), input_shape=(I, J, 1), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Conv2D(nfilters, (3, 3),activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        tpt = nfilters/2
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        net.add(Dense(64, activation='relu'))
+        net.add(Dropout(dropout))
+        net.add(Dense(1, activation='sigmoid'))
+        net.summary()
+        net.compile(loss='binary_crossentropy',
+                      optimizer='Adam',
+                      metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+class MauNet_Calcio_4L_BN(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet 4L with BN for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10,dropout=0.4):
+        I,J = input_shape
+        net = Sequential()
+
+        net.add(Conv2D(nfilters, (3, 3), input_shape=(I, J, 1), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Conv2D(nfilters, (3, 3),activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        tpt = nfilters/2
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Conv2D(tpt, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(dropout))
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        net.add(Dense(64, activation='relu'))
+        net.add(Dropout(dropout))
+        net.add(Dense(1, activation='sigmoid'))
+        net.summary()
+        net.compile(loss='binary_crossentropy',
+                      optimizer='Adam',
+                      metrics=['accuracy'])
 
         print("... compiled! (details below)")
 
