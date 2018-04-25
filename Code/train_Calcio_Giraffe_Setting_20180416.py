@@ -34,7 +34,7 @@ print('Read Complete..')
 X = X/255.0
 Y = Y[:,2]#CALCIO
 ecount=0
-while(ecount<16)
+while(ecount<16):
 	N_pullbacks = len(start_indices)
 
 	print(N_pullbacks)
@@ -265,6 +265,6 @@ while(ecount<16)
 
 		current_fold+=1
 
-		ecount+=1
-
 		del net
+		
+	ecount+=1
