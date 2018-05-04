@@ -25,9 +25,10 @@ save_dir = os.path.join(os.getcwd(), 'saved_models')
 name_pullbacks_x = 'PULLBACKS_X_GIRAFFE.csv'
 name_pullbacks_y = 'PULLBACKS_Y_GIRAFFE.csv'
 name_pullbacks_names = 'PULLBACKS_NAMES_GIRAFFE.csv'
+name_performance_csv = '_UB_Calcium_PreRec.csv'
 allress = []
 print('Readed Started..')
-X,Y,start_indices,end_indices = reader.read_pullbacks_from_CSV(names=name_pullbacks_names,file_x=name_pullbacks_x,file_y=name_pullbacks_y)
+X,Y,start_indices,end_indices = reader.read_pullbacks_from_CSV(names=name_pullbacks_names,file_x=name_pullbacks_x,file_y=name_pullbacks_y,dim=120)
 print('Read Complete..')
 
 
@@ -39,6 +40,7 @@ while(ecount<16):
 
 	print(N_pullbacks)
 
+
 	indices_pullbacks = range(N_pullbacks)
 
 	N_folds = 10
@@ -48,7 +50,7 @@ while(ecount<16):
 
 	current_fold = 0
 
-	basename ='KFOLDNETS_GIRAFFE_SETTING_CALCIO_RSNET1_'
+	basename ='UB_Calcium_'
 
 	ts_accs = np.zeros((10,tr_epochs))
 	tr_accs = np.zeros((10,tr_epochs))
@@ -58,7 +60,6 @@ while(ecount<16):
 	counter = 0
 
 	for train_pullbacks, test_pullbacks in kf.split(indices_pullbacks):
-
 		frame_tr_indices_cnn = None
 		frame_tr_indices_rnn = None
 		frame_test_indices = None
@@ -99,124 +100,141 @@ while(ecount<16):
 		if(ecount==0):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=32)
 			model_name = '3-BN-32-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv = '3-BN-32-04' + name_performance_csv
 			results_file = basename+'3-BN-32-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-BN-32-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-BN-32-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 		if(ecount==1):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=16)
 			results_file = basename+'3-BN-16-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-BN-16-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-BN-16-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-BN-16-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '3-BN-16-04' + name_performance_csv
 		if(ecount==2):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=32)
 			results_file = basename+'3-BN-32-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-BN-32-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-BN-32-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-BN-32-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '3-BN-32-01' + name_performance_csv
 		if(ecount==3):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=16)
 			results_file = basename+'3-BN-16-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-BN-16-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-BN-16-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-BN-16-01'+'UBCNN_Calcio_trained_model.h5'
 		if(ecount==4):
 			net = MauNet_Calcio_3L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=32)
 			results_file = basename+'3-32-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-32-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-32-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-32-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '3-32-04' + name_performance_csv
 		if(ecount==5):
 			net = MauNet_Calcio_3L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=16)
 			results_file = basename+'3-16-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-16-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-16-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-16-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '3-16-04' + name_performance_csv
 		if(ecount==6):
 			net = MauNet_Calcio_3L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=32)
 			results_file = basename+'3-32-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-32-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-32-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-32-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '3-32-01' + name_performance_csv
 		if(ecount==7):
 			net = MauNet_Calcio_3L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=16)
 			results_file = basename+'3-16-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'3-16-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'3-16-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-16-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '3-16-01' + name_performance_csv
 		if(ecount==8):
 			net = MauNet_Calcio_4L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=32)
 			results_file = basename+'4-BN-32-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-BN-32-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-BN-32-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-BN-32-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-BN-32-04' + name_performance_csv
 		if(ecount==9):
 			net = MauNet_Calcio_4L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=16)
 			results_file = basename+'4-BN-16-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-BN-16-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-BN-16-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-BN-16-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-BN-16-04' + name_performance_csv
 		if(ecount==10):
 			net = MauNet_Calcio_4L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=32)
 			results_file = basename+'4-BN-32-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-BN-32-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-BN-32-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-BN-32-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-BN-32-01' + name_performance_csv
 		if(ecount==11):
 			net = MauNet_Calcio_4L_BN()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=16)
 			results_file = basename+'4-BN-16-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-BN-16-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-BN-16-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-BN-16-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-BN-16-01' + name_performance_csv
 		if(ecount==12):
 			net = MauNet_Calcio_4L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=32)
 			results_file = basename+'4-32-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-32-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-32-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-32-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-32-04' + name_performance_csv
 		if(ecount==13):
 			net = MauNet_Calcio_4L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=16)
 			results_file = basename+'4-16-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-16-04'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-16-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-16-04'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-16-04' + name_performance_csv
 		if(ecount==14):
 			net = MauNet_Calcio_4L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=32)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=32)
 			results_file = basename+'4-32-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-32-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-32-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-32-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-32-01' + name_performance_csv
 		if(ecount==15):
 			net = MauNet_Calcio_4L()
 			smetrics = SingleLabelMonitor()
-			net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.1,nfilters=16)
+			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=16)
 			results_file = basename+'4-16-01'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-			filename = basename+'4-16-01'+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+			filename = basename+'4-16-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '4-16-01'+'UBCNN_Calcio_trained_model.h5'
+			name_performance_csv =  '4-16-01' + name_performance_csv
+
+		print '__________Experiment Count: ' + str(ecount) + '__________'
+		print 'Experiment: ' + filename + ' Fold: ' + str(current_fold)
 
 		net_name = 'SingleNet_Calcio_30CLEAN_UNION_FOLD%d'%current_fold
 		target_vars = ['calcio']
 
-		history = net.train_model(X_train_cnn, y_train_cnn, X_val=X_test, y_val=y_test, batch_size=16, n_epochs=tr_epochs,save_name=filename,callbacks=[smetrics])
+		history = net.train_model_DA(X_train_cnn, y_train_cnn, X_val=X_test, y_val=y_test, batch_size=8, n_epochs=tr_epochs,save_name=filename,callbacks=[smetrics])
 
 		history_tr_acc = history.history['acc']
 		history_val_acc = history.history['val_acc']
-
 
 		shape_X_train = X_train_cnn.shape
 		shape_Y_train = y_train_cnn.shape
@@ -249,6 +267,9 @@ while(ecount<16):
 		precisions[counter,:] = np.array(smetrics.prec_val)
 		recalls[counter,:] = np.array(smetrics.rec_val)
 
+		allress = np.dstack((precisions[:,99],recalls[:,99]))
+		print allress
+
 		counter +=1
 
 		results = ExperimentResults(train_error,test_error,history_tr_acc,history_val_acc,others)
@@ -259,12 +280,24 @@ while(ecount<16):
 
 		if not os.path.isdir(save_dir):
 		    os.makedirs(save_dir)
-		model_path = os.path.join(save_dir, str(current_fold)+model_name)
+		model_path = os.path.join(save_dir, str(current_fold)+'_'+model_name)
 		net.save(model_path)
 		print('Saved trained model at %s ' % model_path)
+
+		#Saves Experiment Precision and Recall
+		teststr = str(current_fold)+'_'+model_name+'.csv'
+		teststr_path = os.path.join(save_dir, teststr)
+		with open(teststr_path,"w+") as my_csv:
+		    csvWriter = csv.writer(my_csv,delimiter=',')
+		    for tesx in test_pullbacks:
+		    	csvWriter.writerow([tesx])
 
 		current_fold+=1
 
 		del net
-		
+
+	#Saves Experiment Precision and Recall
+	with open(name_performance_csv,"w+") as my_csv:
+	    csvWriter = csv.writer(my_csv,delimiter=',')
+	    csvWriter.writerows(allress[0])
 	ecount+=1

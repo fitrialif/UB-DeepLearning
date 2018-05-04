@@ -367,7 +367,7 @@ class MauNet_Calcio(UBCNN):
         net.add(Dense(1, activation='sigmoid'))
         net.summary()
         net.compile(loss='binary_crossentropy',
-                      optimizer='Adam',
+                      optimizer=optimizer,
                       metrics=['accuracy'])
 
         print("... compiled! (details below)")
@@ -401,10 +401,10 @@ class MauNet_Calcio_3L(UBCNN):
 
 
         net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-        net.add(Dense(64, activation='relu'))
-        net.add(Dropout(dropout))
-        net.add(Dense(1, activation='sigmoid'))
-        net.summary()
+        
+        net.add(Dense(n_target_feat))
+        net.add(Activation('sigmoid'))
+
         net.compile(loss='binary_crossentropy',
                       optimizer='Adam',
                       metrics=['accuracy'])
@@ -443,10 +443,10 @@ class MauNet_Calcio_3L_BN(UBCNN):
 
 
         net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-        net.add(Dense(64, activation='relu'))
-        net.add(Dropout(dropout))
-        net.add(Dense(1, activation='sigmoid'))
-        net.summary()
+        
+        net.add(Dense(n_target_feat))
+        net.add(Activation('sigmoid'))
+
         net.compile(loss='binary_crossentropy',
                       optimizer='Adam',
                       metrics=['accuracy'])
@@ -486,10 +486,10 @@ class MauNet_Calcio_4L(UBCNN):
         net.add(Dropout(dropout))
 
         net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-        net.add(Dense(64, activation='relu'))
-        net.add(Dropout(dropout))
-        net.add(Dense(1, activation='sigmoid'))
-        net.summary()
+        
+        net.add(Dense(n_target_feat))
+        net.add(Activation('sigmoid'))
+
         net.compile(loss='binary_crossentropy',
                       optimizer='Adam',
                       metrics=['accuracy'])
@@ -532,10 +532,10 @@ class MauNet_Calcio_4L_BN(UBCNN):
         net.add(Dropout(dropout))
 
         net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-        net.add(Dense(64, activation='relu'))
-        net.add(Dropout(dropout))
-        net.add(Dense(1, activation='sigmoid'))
-        net.summary()
+        
+        net.add(Dense(n_target_feat))
+        net.add(Activation('sigmoid'))
+
         net.compile(loss='binary_crossentropy',
                       optimizer='Adam',
                       metrics=['accuracy'])
@@ -955,7 +955,7 @@ class ImageReader:
         return X,Y,start_indices,end_indices,pullback_names
 
 
-    def read_fromCSV(self,csv_x='X_DICOM_FRA.csv',csv_y='Y_DICOM_FRA.csv',dim=128,n_features=3):
+    def read_fromCSV(self,csv_x='X_DICOM_FRA.csv',csv_y='Y_DICOM_FRA.csv',dim=120,n_features=3):
 
         counter = 0
 

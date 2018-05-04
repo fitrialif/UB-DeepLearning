@@ -14,7 +14,7 @@ name_file_labels = 'clean_labels_giraffe.txt'
 
 #read folder with images, eventually reduce resolution and save results to CSV
 #in addition it saves labels and names of pullbacks and frames in the same order as images have been written
-def prepare_pullbacks(input_folder='DICOM_FRA',filename_labels='labels.txt',n_features=3, pixels_in=512, pixels_out=128):
+def prepare_pullbacks(input_folder='DICOM_FRA',filename_labels='labels.txt',n_features=3, pixels_in=512, pixels_out=120):
 
     #READ FRAMES
     subdirs = os.listdir(input_folder)
@@ -125,4 +125,4 @@ def prepare_pullbacks(input_folder='DICOM_FRA',filename_labels='labels.txt',n_fe
     print(Y.shape)
     return X,Y
 
-prepare_pullbacks(input_folder='DICOM_FRA',filename_labels=name_file_labels,pixels_in=512, pixels_out=128)
+prepare_pullbacks(input_folder='DICOM_FRA',filename_labels=name_file_labels,pixels_in=512, pixels_out=120)
