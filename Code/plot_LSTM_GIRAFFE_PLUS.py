@@ -8,11 +8,9 @@ import numpy as np
 import sys
 import os
 
-from UBNet import *
+import pickle
 
 np.random.seed(42)
-
-reader = SequenceReader()
 
 n_features = 3
 
@@ -23,6 +21,8 @@ nepochs = 256
 base_folder = sys.argv[1]
 base_folder_figs = base_folder+"LSTM_PREDICTIONS_DEEP_GIRAFFE"
 
+exp_name = sys.argv[2]
+
 Nfolds = 10
 
 base_name_tr = 'KFOLDNETS_GIRAFFE_SETTING_CALCIO_RSNET1'
@@ -32,32 +32,8 @@ save_base = 'KFOLDNETS_GIRAFFE_SETTING_CALCIO_RSNET1'
 
 for fold in range(Nfolds):
 
-	name_tr_data = base_name_tr+'_Fold%d.results'%fold
-	name_ts_data = base_name_ts+'_Fold%d.results'%fold
-
-	max_len_tr = reader.check_length_seqs(name_tr_data,n_features,has_header=False)
-	max_len_ts = reader.check_length_seqs(name_ts_data,n_features,has_header=False)
-	
-	max_len_common = int(max(max_len_tr,max_len_ts))
-
-	train_data,ntrain,max_len_train,names_train = reader.read_data(name_tr_data,n_features,has_header=False,force_max_len=True,max_len_forced=max_len_common)
-	test_data,ntest,max_len_test,names_test = reader.read_data(name_ts_data,n_features,has_header=False,force_max_len=True,max_len_forced=max_len_common)
-
-	Xtrain = train_data[:,:,0:n_features]
-	Ytrain = train_data[:,:,n_features:]
-	Xtest = test_data[:,:,0:n_features]
-	Ytest = test_data[:,:,n_features:]
-
-	ntrain = len(Xtrain)
-	ntest = len(Xtest)
-
-	Xtrain = np.reshape(Xtrain,(ntrain, max_len_common, n_features))
-	Ytrain = np.reshape(Ytrain,(ntrain, max_len_common, n_features))
-	Xtest = np.reshape(Xtest,(ntest, max_len_common, n_features))
-	Ytest = np.reshape(Ytest,(ntest, max_len_common, n_features))
-
-	results_file_train = save_base+'_%Fold.results'%(n_units_rnn,nepochs,fold)
-	results_file_test = save_base+'_%Fold.results'%(n_units_rnn,nepochs,fold)
+	results_file_train = save_base+'_'+exp_name+'_Fold%d_Of_%d.results'%(fold,10)
+	results_file_test = save_base+'_'+exp_name+'_Fold%d_Of_%d.results'%(fold,10)
 
 	fin_train = open(results_file_train, 'r')
 	fin_test = open(results_file_test, 'r')
@@ -65,15 +41,17 @@ for fold in range(Nfolds):
 	results_train = pickle.load(fin_train)
 	results_test = pickle.load(fin_test)
 
-	Y_true_train = results_train.Ytrue
-	Y_true_test = results_test.Ytrue
+	print results_train
 
-	Y_hat_train = results_train.Yhat
+	Y_true_train = results_train.train_accuracy
+	Y_true_test = results_test.train_accuracy
+
+	Y_hat_train = results_train.train_accuracy
 	Y_dec_train = np.array(Y_hat_train,copy=True)
 	Y_dec_train[Y_dec_train>=0.5] = 1.0
 	Y_dec_train[Y_dec_train<0.5] = 0.0
 
-	Y_hat_test = results_test.Yhat
+	Y_hat_test = results_test.train_accuracy
 	Y_dec_test = np.array(Y_hat_test,copy=True)
 	Y_dec_test[Y_dec_test>=0.5] = 1.0
 	Y_dec_test[Y_dec_test<0.5] = 0.0
