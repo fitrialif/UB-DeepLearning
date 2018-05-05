@@ -25,7 +25,6 @@ save_dir = os.path.join(os.getcwd(), 'saved_models')
 name_pullbacks_x = 'PULLBACKS_X_GIRAFFE.csv'
 name_pullbacks_y = 'PULLBACKS_Y_GIRAFFE.csv'
 name_pullbacks_names = 'PULLBACKS_NAMES_GIRAFFE.csv'
-name_performance_csv = '_UB_Calcium_PreRec.csv'
 allress = []
 print('Readed Started..')
 X,Y,start_indices,end_indices = reader.read_pullbacks_from_CSV(names=name_pullbacks_names,file_x=name_pullbacks_x,file_y=name_pullbacks_y,dim=120)
@@ -36,6 +35,8 @@ X = X/255.0
 Y = Y[:,2]#CALCIO
 ecount=0
 while(ecount<16):
+	name_performance_csv = '_UB_Calcium_PreRec.csv'
+
 	N_pullbacks = len(start_indices)
 
 	print(N_pullbacks)
