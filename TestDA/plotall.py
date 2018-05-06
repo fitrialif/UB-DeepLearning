@@ -58,6 +58,7 @@ def fileReader():
                     images.append(x)
                 if(columnC==3)
                     labels.append(column)
+                columnC+=1
 
 
 fileReader()
