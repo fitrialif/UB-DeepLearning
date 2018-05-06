@@ -33,7 +33,7 @@ print('Read Complete..')
 
 X = X/255.0
 Y = Y[:,2]#CALCIO
-ecount=0
+ecount=3
 while(ecount<16):
 	name_performance_csv = '_UB_Calcium_PreRec.csv'
 
