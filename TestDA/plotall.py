@@ -59,7 +59,10 @@ def fileReader():
                 if(columnC==3)
                     labels.append(column)
                 columnC+=1
-
+def plotter():
+    plt.plot(labels)
+    plt.ylabel('some numbers')
+    plt.show()s
 
 fileReader()
 output = []
@@ -76,7 +79,5 @@ for image in images:
     preout.append(res[0][0])
     output.append(preout)
 
-with open("predictions_34_PDC4MOHG.csv","w+") as my_csv:
-    csvWriter = csv.writer(my_csv,delimiter=',')
-    csvWriter.writerows(output)
+plotter()
 print(output)
