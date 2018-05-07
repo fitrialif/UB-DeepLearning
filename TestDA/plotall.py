@@ -82,6 +82,30 @@ def fileReader():
 		count+=1
 
 def plotter():
+	coun = 0
+	fp = 0.0000
+	fn = 0.0000
+	tp = 0.0000
+	tn = 0.0000
+	for xp in output:
+		tmp = int(labelFil[coun])
+		if(xp==0):
+			if(tmp == 0):
+				fn=fn+1
+			if(tmp==1):
+				fp=fp+1
+		if(xp==1):
+			if(tmp==0):
+				tn=tn+1
+			if(tmp==1):
+				tp=tp+1
+		coun+=1
+	print(fp,fn,tp,tn)
+	prec = tp/(tp+fp)
+	rec = tp/(tp+fn)
+	print(prec,rec)
+	f1 = 2*((prec*rec)/(prec+rec))
+
 	plt.plot(labelFil, color='blue')
 	plt.plot(output, color='black') 
 	black_patch = mpatches.Patch(color='black', label='Network Prediction')
@@ -89,6 +113,7 @@ def plotter():
 	plt.legend(handles=[blue_patch,black_patch])
 	tmp = filenFil[0].split('/')
 	plt.xlabel(tmp[1])
+	plt.ylabel('F1 Score: ' + str(f1))
 	plt.show()
 def predicter():
 	model = load_model('saved_models/7_3-BN-32-04UBCNN_Calcio_trained_model.h5', custom_objects={'f1': f1,'precision': precision,'recall': recall})
