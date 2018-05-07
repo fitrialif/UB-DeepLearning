@@ -33,8 +33,8 @@ print('Read Complete..')
 
 X = X/255.0
 Y = Y[:,2]#CALCIO
-ecount=3
-while(ecount<16):
+ecount=4
+while(ecount<20):
 	name_performance_csv = '_UB_Calcium_PreRec.csv'
 
 	N_pullbacks = len(start_indices)
@@ -98,7 +98,7 @@ while(ecount<16):
 		X_test = X[frame_test_indices,:]
 		y_test = Y[frame_test_indices]
 
-		if(ecount==0):
+		if(ecount==0 or ecount==16):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
 			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=32)
@@ -106,7 +106,7 @@ while(ecount<16):
 			name_performance_csv = '3-BN-32-04' + name_performance_csv
 			results_file = basename+'3-BN-32-04'+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
 			filename = basename+'3-BN-32-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
-		if(ecount==1):
+		if(ecount==1 or ecount==17):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
 			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=16)
@@ -114,7 +114,7 @@ while(ecount<16):
 			filename = basename+'3-BN-16-04'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-BN-16-04'+'UBCNN_Calcio_trained_model.h5'
 			name_performance_csv =  '3-BN-16-04' + name_performance_csv
-		if(ecount==2):
+		if(ecount==2 or ecount==18):
 			net = MauNet_Calcio_3L_BN()
 			smetrics = SingleLabelMonitor()
 			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.1,nfilters=32)
@@ -122,7 +122,7 @@ while(ecount<16):
 			filename = basename+'3-BN-32-01'+'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
 			model_name = '3-BN-32-01'+'UBCNN_Calcio_trained_model.h5'
 			name_performance_csv =  '3-BN-32-01' + name_performance_csv
-		if(ecount==3):
+		if(ecount==3 or ecount==19):
 			net = MauNet_Calcio_3L()
 			smetrics = SingleLabelMonitor()
 			net.compile_model(input_shape=(120,120),n_target_feat=1,dropout=0.4,nfilters=32)
