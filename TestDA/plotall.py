@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_curve
 from keras.callbacks import ModelCheckpoint, Callback
 from sklearn.model_selection import KFold
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -60,7 +61,7 @@ def fileReader():
                 if(columnC==3): 
                     labels.append(column)
                 columnC+=1
-    with open("files5.csv") as filename:
+    with open("files3.csv") as filename:
         template=csv.reader(filename)
         for row in template:
             rowData = []
@@ -81,12 +82,16 @@ def fileReader():
 		count+=1
 
 def plotter():
-    plt.plot(labelFil, color='blue')
-    plt.plot(output, color='black')
-    plt.ylabel('some numbers')
-    plt.show()
+	plt.plot(labelFil, color='blue')
+	plt.plot(output, color='black') 
+	black_patch = mpatches.Patch(color='black', label='Network Prediction')
+	blue_patch = mpatches.Patch(color='blue', label='Original Labels')	
+	plt.legend(handles=[blue_patch,black_patch])
+	tmp = filenFil[0].split('/')
+	plt.xlabel(tmp[1])
+	plt.show()
 def predicter():
-	model = load_model('saved_models/9_3-32-04UBCNN_Calcio_trained_model.h5', custom_objects={'f1': f1,'precision': precision,'recall': recall})
+	model = load_model('saved_models/7_3-BN-32-04UBCNN_Calcio_trained_model.h5', custom_objects={'f1': f1,'precision': precision,'recall': recall})
 	basePath = '34_PDC4MOHG/'
 
 	for image in filenFil:
