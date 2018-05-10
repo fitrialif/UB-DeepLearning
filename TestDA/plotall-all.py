@@ -17,6 +17,8 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
+from skimage.transform import resize
+
 images = []
 labelsP = []
 filenames = []
@@ -28,6 +30,7 @@ pullbacks = []
 testIndex = []
 istest = []
 testPath = []
+
 def f1(y_true, y_pred):
     def recall(y_true, y_pred):
         true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -77,7 +80,7 @@ def fileReader():
                     if(add==1):
                         labelsP.append(labels)
                         labels = []
-                    labels.append(column)
+                    labels.append(int(column))
                 columnC+=1
                 coun+=1
     print(labelsP)
@@ -124,37 +127,50 @@ def plotter():
         fn = 0.0000
         tp = 0.0000
         tn = 0.0000
+        prec = 0.0000
+        rec = 0.0000
+        #Calculo tp tn fp fn
     	for xp in pullback:
+            #Lector de output labels original
     		tmp = int(labelsP[cnt][coun])
     		if(xp==0):
     			if(tmp == 0):
-    				fn=fn+1
+    				tn=tn+1
     			if(tmp==1):
-    				fp=fp+1
+    				fn=fn+1
     		if(xp==1):
     			if(tmp==0):
-    				tn=tn+1
+    				fp=fp+1
     			if(tmp==1):
     				tp=tp+1
     		coun+=1
     	print(fp,fn,tp,tn)
-        if(tp!=0):
-        	prec = tp/(tp+fp)
-        	rec = tp/(tp+fn)
+        if(tp==0):
+            prec = 1
+            rec = 1
+        elif((tp+fp)==0):
+            prec = 1
+            rec = tp/(tp+fn)
+            if((tp+fn)==0):
+                rec = 1
+        elif((tp+fn)==0):
+            rec = 1
+            prec = tp/(tp+fp)
+            if((tp+fp)==0):
+                prec = 1
         else:
-            prec = 0
-            rec=0
+            prec = tp/(tp+fp)
+            rec = tp/(tp+fn)
     	print(prec,rec)
-        if(tp!=0 and prec != 0 or rec!=0):
-    	   f1 = 2*((prec*rec)/(prec+rec))
-        else:
-            f1 = 'nan'
+        f1 = 2*((prec*rec)/(prec+rec))
         plt.figure(num=None, figsize=(10, 6), dpi=150)
+    	axes = plt.gca()
+        print str(len(pullback)) + '=' + str(len(labelsP[cnt]))
+        plt.plot(labelsP[cnt], color='black', linestyle=':', marker='.')
+    	plt.plot(pullback, color='red' , linestyle=':', marker='x',alpha=0.5) 
         plt.ylim(-0.5,1.5)
-    	plt.plot(labelsP[cnt], color='blue')
-    	plt.plot(pullback, color='black' , linestyle='--') 
-    	black_patch = mpatches.Patch(color='black', label='Network Prediction')
-    	blue_patch = mpatches.Patch(color='blue', label='Original Labels')	
+    	black_patch = mpatches.Patch(color='red', label='Network Prediction')
+    	blue_patch = mpatches.Patch(color='black', label='Original Labels')	
     	plt.legend(handles=[blue_patch,black_patch])
         plte = 0
         for tst in testIndex:
@@ -168,10 +184,11 @@ def plotter():
 
         if(pullbacks[cnt]=="34_PDC4MOHG" or pullbacks[cnt]=="46_PD2DK5KB" or pullbacks[cnt]=="72_PD2D493T"):
             plt.xlabel(pullbacks[cnt] + ' N-1')       
-
     	plt.ylabel('F1: ' + str(f1) + ' Prec: ' + str(prec) + ' Rec: ' + str(rec))
-    	plt.savefig(pullbacks[cnt]+'.png')
+    	axes.set_ylim([-0.5,1.5])
+        plt.savefig(pullbacks[cnt]+'.png')
         cnt+=1
+
 def predicter():
     model = load_model('saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5', custom_objects={'f1': f1,'precision': precision,'recall': recall})
     print 'loaded saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5 '
@@ -189,10 +206,12 @@ def predicter():
             last = tmpi
         image_shape = (120,120,1)
         batch_x = np.zeros((1,) + image_shape, dtype=K.floatx())
-        img = load_img(image, target_size=(120,120), grayscale=True)
+        img = load_img(image,grayscale=True)
         x = img_to_array(img)
         x/=255
-        batch_x[0] = x
+        new_im = np.reshape(x,(512,512))
+        new_im_small = resize(new_im, (120,120,1), order=1, preserve_range=True)
+        batch_x[0] = new_im_small
 
         res = model.predict_classes(batch_x)
         #print image + ' was ' + str(res[0][0])
