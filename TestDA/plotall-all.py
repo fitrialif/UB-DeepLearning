@@ -144,25 +144,27 @@ def plotter():
     			if(tmp==1):
     				tp=tp+1
     		coun+=1
+        print(pullbacks[cnt])
     	print(fp,fn,tp,tn)
-        if(tp==0):
+        if((tp+fp)==0):
             prec = 1
-            rec = 1
-        elif((tp+fp)==0):
-            prec = 1
-            rec = tp/(tp+fn)
+            rec = 0
             if((tp+fn)==0):
                 rec = 1
         elif((tp+fn)==0):
             rec = 1
-            prec = tp/(tp+fp)
+            prec = 0
             if((tp+fp)==0):
                 prec = 1
         else:
             prec = tp/(tp+fp)
             rec = tp/(tp+fn)
-    	print(prec,rec)
-        f1 = 2*((prec*rec)/(prec+rec))
+        acc = (tp+tn)/len(pullback)
+        print(prec,rec,acc)
+        if(prec==0 and rec==0):
+            f1=0
+        else:
+            f1 = 2*((prec*rec)/(prec+rec))
         plt.figure(num=None, figsize=(10, 6), dpi=150)
     	axes = plt.gca()
         print str(len(pullback)) + '=' + str(len(labelsP[cnt]))
@@ -173,6 +175,7 @@ def plotter():
     	blue_patch = mpatches.Patch(color='black', label='Original Labels')	
     	plt.legend(handles=[blue_patch,black_patch])
         plte = 0
+        plt.title('TP: ' + str("{0:.0f}".format(tp)) + ' TN: ' + str("{0:.0f}".format(tn)) + ' FP: ' + str("{0:.0f}".format(fp)) + ' FN: ' + str("{0:.0f}".format(fn)) )       
         for tst in testIndex:
             if(int(tst)==cnt):
                 plte=1
@@ -184,11 +187,11 @@ def plotter():
 
         if(pullbacks[cnt]=="34_PDC4MOHG" or pullbacks[cnt]=="46_PD2DK5KB" or pullbacks[cnt]=="72_PD2D493T"):
             plt.xlabel(pullbacks[cnt] + ' N-1')       
-    	plt.ylabel('F1: ' + str(f1) + ' Prec: ' + str(prec) + ' Rec: ' + str(rec))
+    	plt.ylabel('F1: ' + str("{0:.2f}".format(f1)) + ' Prec: ' + str("{0:.2f}".format(prec)) + ' Rec: ' + str("{0:.2f}".format(rec))+ ' Acc: ' + str("{0:.2f}".format(acc)))
     	axes.set_ylim([-0.5,1.5])
         plt.savefig(pullbacks[cnt]+'.png')
         cnt+=1
-
+        plt.close()
 def predicter():
     model = load_model('saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5', custom_objects={'f1': f1,'precision': precision,'recall': recall})
     print 'loaded saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5 '
