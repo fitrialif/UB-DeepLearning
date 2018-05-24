@@ -28,9 +28,10 @@ labelFil = []
 outputAll = []
 pullbacks = []
 testIndex = []
+trainIndex = []
 istest = []
 testPath = []
-
+trainPath = []
 def f1(y_true, y_pred):
     def recall(y_true, y_pred):
         true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -101,27 +102,51 @@ def fileReader():
                     columnC+=1
     pullbacks.sort()
     #print pullbacks
-    with open("saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5.csv") as filename:
+    #with open("saved_models/1_TEST_4-BN-32-01UBCNN_Calcio_trained_model.h5.csv") as filename:
+    with open("saved_models/0_TEST_4-BN-32-01UBCNN_Calcio_trained_model.h5.csv") as filename:
         template=csv.reader(filename)
         for row in template:
             rowData = []
             columnC=0
             for column in row:
                 tmp =int(column)
-                if(tmp>33 and tmp<45):
-                    tmp-=1
-                elif (tmp>45 and tmp<71):
-                    tmp-=2
-                elif (tmp>71):
-                    tmp-=3
                 testIndex.append(tmp)
     for tsti in testIndex:
         testPath.append(pullbacks[int(tsti)])
+        #print pullbacks
+    #with open("saved_models/1_TRAIN_4-BN-32-01UBCNN_Calcio_trained_model.h5.csv") as filename:
+    with open("saved_models/0_TRAIN_4-BN-32-01UBCNN_Calcio_trained_model.h5.csv") as filename:
+        template=csv.reader(filename)
+        for row in template:
+            rowData = []
+            columnC=0
+            for column in row:
+                tmp =int(column)
+                trainIndex.append(tmp)
+    for tsti in trainIndex:
+        trainPath.append(pullbacks[int(tsti)])
 
 def plotter():
+    cnt_all = 0
+    cnt_train = 0
+    cnt_extrain = 0
+    prec_all = 0
+    prec_train = 0
+    prec_extrain = 0
+    rec_all = 0
+    rec_train = 0
+    rec_extrain = 0
+    acc_all = 0
+    acc_train = 0
+    acc_extrain = 0
     cnt = 0
+    sc = 0
+    sctr = 0
+    scts = 0
+    scex = 0
     print labelsP[8]
     for pullback in outputAll:
+        basetitle = '4-BN-32-01'
         coun = 0
         fp = 0.0000
         fn = 0.0000
@@ -165,6 +190,8 @@ def plotter():
             f1=0
         else:
             f1 = 2*((prec*rec)/(prec+rec))
+        if(f1==0):
+            print('Badddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
         plt.figure(num=None, figsize=(10, 6), dpi=150)
     	axes = plt.gca()
         print str(len(pullback)) + '=' + str(len(labelsP[cnt]))
@@ -175,29 +202,87 @@ def plotter():
     	blue_patch = mpatches.Patch(color='black', label='Original Labels')	
     	plt.legend(handles=[blue_patch,black_patch])
         plte = 0
+        pltr = 0
         plt.title('TP: ' + str("{0:.0f}".format(tp)) + ' TN: ' + str("{0:.0f}".format(tn)) + ' FP: ' + str("{0:.0f}".format(fp)) + ' FN: ' + str("{0:.0f}".format(fn)) )       
         for tst in testIndex:
             if(int(tst)==cnt):
                 plte=1
+        for tst in trainIndex:
+            if(int(tst)==cnt):
+                pltr=1
         if(plte==1):
             print 'TEEEEST ' + pullbacks[cnt]
-            plt.xlabel(pullbacks[cnt] + ' TEST')
+            plt.xlabel(pullbacks[cnt] + ' TEST ' + basetitle)
+            if(f1!=0):
+                prec_all += prec
+                rec_all += rec
+                acc_all += acc
+                cnt_all += 1
+            else:
+                sc+=1
+                scts+=1
+        elif(pltr==1):
+            plt.xlabel(pullbacks[cnt] + ' TRAINING ' + basetitle)
+            if(f1!=0):
+                prec_train += prec
+                rec_train += rec
+                acc_train += acc
+                cnt_train += 1
+            else:
+                sc+=1
+                sctr+=1
         else:
-            plt.xlabel(pullbacks[cnt] + ' TRAINING')
-
-        if(pullbacks[cnt]=="34_PDC4MOHG" or pullbacks[cnt]=="46_PD2DK5KB" or pullbacks[cnt]=="72_PD2D493T"):
-            plt.xlabel(pullbacks[cnt] + ' N-1')       
+            plt.xlabel(pullbacks[cnt] + ' RNN TRAINING ' + basetitle)
+            print('RNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+            if(f1!=0):
+                prec_extrain += prec
+                rec_extrain += rec
+                acc_extrain += acc
+                cnt_extrain += 1
+            else:
+                sc+=1
+                scex+=1
     	plt.ylabel('F1: ' + str("{0:.2f}".format(f1)) + ' Prec: ' + str("{0:.2f}".format(prec)) + ' Rec: ' + str("{0:.2f}".format(rec))+ ' Acc: ' + str("{0:.2f}".format(acc)))
     	axes.set_ylim([-0.5,1.5])
         plt.savefig(pullbacks[cnt]+'.png')
         cnt+=1
         plt.close()
+    prec_all /= cnt_all
+    rec_all /= cnt_all
+    acc_all /= cnt_all
+    prec_train /= cnt_train
+    rec_train /= cnt_train
+    acc_train /= cnt_train
+    prec_extrain /= cnt_extrain
+    rec_extrain /= cnt_extrain
+    acc_extrain /= cnt_extrain
+    print('_TEST_')
+    print('Acc: ' + str(acc_all))
+    print ('Prec: '+str(prec_all))
+    print ('Rec: ' + str(rec_all))
+    print('_ExTrain_')
+    print('Acc: ' + str(acc_extrain))
+    print ('Prec: ' + str(prec_extrain))
+    print ('Rec: ' + str(rec_extrain))
+    print('_TRAIN_')
+    print('Acc: ' + str(acc_train))
+    print('Prec: ' + str(prec_train))
+    print('Rec: ' + str(rec_train))
+    print('Ignored ' + str(sc) + ' special cases')
+    print(str(sctr) + ' in training.')
+    print(str(scts) + ' in test.')
+    print(str(scex) + ' in Extra-Training')
+
 def predicter():
-    model = load_model('saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5', custom_objects={'f1': f1,'precision': precision,'recall': recall})
-    print 'loaded saved_models/3_3-BN-32-01UBCNN_Calcio_trained_model.h5 '
+    netfile = 'saved_models/0_4-BN-32-01UBCNN_Calcio_trained_model.h5'
+    #netfile = 'saved_models/6_4-BN-64-04UBCNN_Calcio_trained_model.h5'
+    #netfile = 'saved_models/1_4-BN-64-01UBCNN_Calcio_trained_model.h5'
+    model = load_model(netfile, custom_objects={'f1': f1,'precision': precision,'recall': recall})
+    print 'loaded ' + netfile
     last = ''
     count = 0
     output = []
+    output2 = []
     for image in filenames:
         tmpi = image.split('/')[1]
         if(tmpi!=last):
@@ -207,20 +292,21 @@ def predicter():
                 outputAll.append(output)
             output = []
             last = tmpi
-        image_shape = (120,120,1)
+        image_shape = (128,128,1)
         batch_x = np.zeros((1,) + image_shape, dtype=K.floatx())
         img = load_img(image,grayscale=True)
         x = img_to_array(img)
         x/=255
         new_im = np.reshape(x,(512,512))
-        new_im_small = resize(new_im, (120,120,1), order=1, preserve_range=True)
+        new_im_small = resize(new_im, (128,128,1), order=1, preserve_range=True)
         batch_x[0] = new_im_small
 
         res = model.predict_classes(batch_x)
+        res2 = model.predict(batch_x)
         #print image + ' was ' + str(res[0][0])
         output.append(res[0][0])
+        output2.append(res2[0][0])
         count+=1
-
 fileReader()
 predicter()
 plotter()

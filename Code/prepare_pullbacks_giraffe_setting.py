@@ -86,7 +86,7 @@ def prepare_pullbacks(input_folder='DICOM_FRA',filename_labels='labels.txt',n_fe
                 new_im = np.reshape(x,(pixels_in,pixels_in))
                 new_im_small = resize(new_im, (pixels_out,pixels_out), order=1, preserve_range=True)
                 new_im_small = np.reshape(new_im_small,pixels_out*pixels_out)
-                #print "Resizing image %dx%d to %dx%d"%(pixels_in,pixels_in,pixels_out,pixels_out)
+                print "Resizing image %dx%d to %dx%d"%(pixels_in,pixels_in,pixels_out,pixels_out)
                 x = 255.0*new_im_small
             else:
                 x = np.reshape(x,pixels_out*pixels_out)
@@ -113,5 +113,5 @@ def prepare_pullbacks(input_folder='DICOM_FRA',filename_labels='labels.txt',n_fe
     print(Y.shape)
     return X,Y
 
-prepare_pullbacks(input_folder='DICOM_FRA',filename_labels=name_file_labels,pixels_in=512, pixels_out=128)
+prepare_pullbacks(input_folder='DICOM_FRA',filename_labels=name_file_labels,pixels_in=512, pixels_out=100)
 
