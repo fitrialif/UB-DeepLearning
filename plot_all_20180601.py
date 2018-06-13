@@ -18,31 +18,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from skimage.transform import resize
-cntarg = 2
-cntap = 0 
-basetitle = []
-bestfold = []
-nets = int(sys.argv[1])
-while(cntap<nets):
-    basetitle.append(str(sys.argv[cntarg]))
-    cntarg+=1
-    bestfold.append(int(sys.argv[cntarg]))
-    cntarg+=1
-    cntap+=1
-print('_End validation')
-for ip in range(nets):
-    basetxt = ''
-    for i in range (10):
-        basetxt += basetitle[ip]
-    basetxt = basetxt + '_UB_Calcium_PreRec.csv'
-    with open(basetxt) as filename:
-            template=csv.reader(filename)
-            for row in template:
-                print(row)
-    print(basetitle)
-    print(bestfold)
-print('_End validation_')
 
+#Custom metrics redefinition in order to load the trained models
 def f1(y_true, y_pred):
     def recall(y_true, y_pred):
         true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
@@ -69,6 +46,33 @@ def precision(y_true, y_pred):
     precision = true_positives / (predicted_positives + K.epsilon())
     return precision
 
+cntarg = 2
+cntap = 0 
+basetitle = []
+bestfold = []
+nets = int(sys.argv[1])
+
+#Validate the model and model's metadata is available in the directory 
+print('_Start validation')
+while(cntap<nets):
+    basetitle.append(str(sys.argv[cntarg]))
+    cntarg+=1
+    bestfold.append(int(sys.argv[cntarg]))
+    cntarg+=1
+    cntap+=1
+print('_End validation')
+
+for ip in range(nets):
+    basetxt = 'trained_networks/'
+    basetxt = basetxt + basetitle[ip] + '_UB_Calcium_PreRec.csv'
+    with open(basetxt) as filename:
+            template=csv.reader(filename)
+            for row in template:
+                print(row)
+    print(basetitle)
+    print(bestfold)
+
+#Variables used to save the global scores of the evaluated networks
 test_acc = []
 train_acc = []
 etrain_acc =[]
@@ -81,16 +85,61 @@ etrain_rec = []
 test_f1 = []
 train_f1 = []
 etrain_f1 = []
+pullbacks = []
+filenames = []
+labelsP = []
+
+#Labels Reader
+with open("trained_networks/clean_labels_giraffe.csv") as filename:
+    template=csv.reader(filename)
+    last = ''
+    add = 0
+    labels = []
+    coun = 0
+    for row in template:
+        rowData = []
+        columnC=0
+        for column in row:
+            if(columnC==0):
+                ptmp = column.split('/')
+                if (last!=ptmp[1]):
+                    last=ptmp[1]
+                    if(coun!=0):
+                        add = 1
+                else:
+                    add = 0
+                filenames.append(column)
+            if(columnC==3): 
+                if(add==1):
+                    labelsP.append(labels)
+                    labels = []
+                labels.append(int(column))
+            columnC+=1
+            coun+=1
+with open("trained_networks/clean_labels_giraffe.csv") as filename:
+    template=csv.reader(filename)
+    last = ''
+    for row in template:
+        rowData = []
+        columnC=0
+        for column in row:
+            if(columnC==0):
+                ptmp = column.split('/')
+                if (last!=ptmp[1]):
+                    pullbacks.append(ptmp[1])
+                    last=ptmp[1]
+                columnC+=1
+pullbacks.sort()
+
+#Loop for all evaluated networks
 for ixps in range(nets):
-    #basetitle = '4-BN-32-01'
-    basetxt = ''
-    for i in range (10):
-        basetxt += basetitle[ixps]
-    basetxt = basetxt + '_UB_Calcium_PreRec.csv'
+    basetxt = 'trained_networks/'
+    basetxt = basetxt + basetitle[ixps] + '_UB_Calcium_PreRec.csv'
     theAcc = []
     thePrec = []
     theRec = []
     theTTE = []
+    #Keras Metrics Reader
     with open(basetxt) as filename:
         template=csv.reader(filename)
         for row in template:
@@ -116,16 +165,14 @@ for ixps in range(nets):
     all_test_f1 = []
     all_train_f1 = []
     all_etrain_f1 = []
+    #Loop for each network epoch
     for i in range(10):  
         images = []
-        labelsP = []
-        filenames = []
         preFilen = []
         filenFil = []
         labelFil = []
         outputAll = []
         outputAll2 = []
-        pullbacks = []
         testIndex = []
         trainIndex = []
         istest = []
@@ -136,50 +183,12 @@ for ixps in range(nets):
         recAll = []
         print('_____________________Fold: ' + str(i) + '_____________________')
         print('________________' + basetitle[ixps] + '________________')
-        netfile = 'saved_models/' + str(i) + '_' + basetitle[ixps] + 'UBCNN_Calcio_trained_model.h5'
-        testFile = 'saved_models/' + str(i) + '_TEST_' + basetitle[ixps] + 'UBCNN_Calcio_trained_model.h5.csv'
-        trainFile = 'saved_models/' + str(i) + '_TRAIN_' + basetitle[ixps] + 'UBCNN_Calcio_trained_model.h5.csv'
+        netfile = 'trained_networks/saved_models/' + str(i) + '_' + basetitle[ixps] + 'UBCNN_Calcio_trained_model.h5'
+        testFile = 'trained_networks/saved_models/' + str(i) + '_TEST_' + basetitle[ixps] + 'UBCNN_Calcio_trained_model.h5.csv'
+        trainFile = 'trained_networks/saved_models/' + str(i) + '_TRAIN_' + basetitle[ixps] + 'UBCNN_Calcio_trained_model.h5.csv'
         # ----------------------------fileReader(testFile, trainFile) ---------------------------------------------
-        with open("clean_labels_giraffe.csv") as filename:
-            template=csv.reader(filename)
-            last = ''
-            add = 0
-            labels = []
-            coun = 0
-            for row in template:
-                rowData = []
-                columnC=0
-                for column in row:
-                    if(columnC==0):
-                        ptmp = column.split('/')
-                        if (last!=ptmp[1]):
-                            last=ptmp[1]
-                            if(coun!=0):
-                                add = 1
-                        else:
-                            add = 0
-                        filenames.append(column)
-                    if(columnC==3): 
-                        if(add==1):
-                            labelsP.append(labels)
-                            labels = []
-                        labels.append(int(column))
-                    columnC+=1
-                    coun+=1
-        with open("clean_labels_giraffe.csv") as filename:
-            template=csv.reader(filename)
-            last = ''
-            for row in template:
-                rowData = []
-                columnC=0
-                for column in row:
-                    if(columnC==0):
-                        ptmp = column.split('/')
-                        if (last!=ptmp[1]):
-                            pullbacks.append(ptmp[1])
-                            last=ptmp[1]
-                        columnC+=1
-        pullbacks.sort()
+
+        #Test Pullback index reader
         with open(testFile) as filename:
             template=csv.reader(filename)
             for row in template:
@@ -190,6 +199,8 @@ for ixps in range(nets):
                     testIndex.append(tmp)
         for tsti in testIndex:
             testPath.append(pullbacks[int(tsti)])
+
+        #Train Pullback index reader
         with open(trainFile) as filename:
             template=csv.reader(filename)
             for row in template:
@@ -201,7 +212,8 @@ for ixps in range(nets):
         for tsti in trainIndex:
             trainPath.append(pullbacks[int(tsti)])
 
-        # ----------------------------- predicter(netfile) ------------------------------------------------------------
+        #Read image, sends it to the pretrained network and gets the prediction
+
         model = load_model(netfile, custom_objects={'f1': f1,'precision': precision,'recall': recall})
         print 'loaded ' + netfile
         last = ''
@@ -234,7 +246,8 @@ for ixps in range(nets):
             output.append(res[0][0])
             output2.append(res2[0][0])
             count+=1
-        # plotter(netfile)
+
+        # Ground Truth vs Prediction Plotter
         cnt_all = 0
         cnt_train = 0
         cnt_extrain = 0
@@ -299,8 +312,6 @@ for ixps in range(nets):
                 f1=0
             else:
                 f1 = 2*((prec*rec)/(prec+rec))
-            if(f1==0):
-                print('Badddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
             plt.figure(num=None, figsize=(10, 6), dpi=150)
             axes = plt.gca()
             print str(len(pullback)) + '=' + str(len(labelsP[cnt]))
@@ -320,7 +331,6 @@ for ixps in range(nets):
                 if(int(tst)==cnt):
                     pltr=1
             if(plte==1):
-                print 'TEEEEST ' + pullbacks[cnt]
                 theTTE.append(1)
                 plt.xlabel(pullbacks[cnt] + ' TEST ' + basetitle[ixps])
                 if(f1!=0):
@@ -345,7 +355,6 @@ for ixps in range(nets):
                     sctr+=1
             else:
                 plt.xlabel(pullbacks[cnt] + ' RNN TRAINING ' + basetitle[ixps])
-                print('RNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
                 theTTE.append(2)
                 if(f1!=0):
                     prec_extrain.append(prec)
@@ -363,6 +372,9 @@ for ixps in range(nets):
             plt.savefig(basetitle[ixps] + '/' + str(i) + '/Graficas/' + pullbacks[cnt]+'.png')
             cnt+=1
             plt.close()
+
+        #Append the metrics to the general array
+
         prec_all = np.array(prec_all)
         rec_all = np.array(rec_all)
         acc_all = np.array(acc_all)
@@ -413,7 +425,9 @@ for ixps in range(nets):
         text_file.write(str(scts) + ' in test.' + '\n')
         text_file.write(str(scex) + ' in Extra-Training' + '\n')
         text_file.close()
-    # -------------------------------------csvWriter(basetitle)---------------------------------------------------
+
+    # Save the Network Prediction in folders corrresponding if the pullbacvk was train test or extratrain
+
         cnt = 0
         stro = ''
         if not os.path.exists(basetitle[ixps] + '/' + str(i) + '/TRAIN/TRAIN/'):
@@ -451,81 +465,70 @@ for ixps in range(nets):
     train_f1.append(all_train_f1)
     etrain_f1.append(all_etrain_f1)
 # -------------------------------------boxplotter---------------------------------------------------
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print (len(test_acc))
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-print('__________________________________________________________________________________________________')
-for x in range (nets):
-    spread = np.random.rand(50) * 100
-    center = np.ones(25) * 50
-    flier_high = np.random.rand(10) * 100 + 100
-    flier_low = np.random.rand(10) * -100
-    data = np.concatenate((spread, center, flier_high, flier_low), 0)
-    labels = (basetitle)
+
+spread = np.random.rand(50) * 100
+center = np.ones(25) * 50
+flier_high = np.random.rand(10) * 100 + 100
+flier_low = np.random.rand(10) * -100
+data = np.concatenate((spread, center, flier_high, flier_low), 0)
+labels = (basetitle)
+# test_acc
+plt.boxplot(test_acc)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Test Acc')
+plt.show()
     # test_acc
-    plt.boxplot(test_acc)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Test Acc')
-    plt.show()
-        # test_acc
-    plt.boxplot(train_acc)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Train Acc')
-    plt.show()
-        # test_acc
-    plt.boxplot(etrain_acc)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Extra-Training Acc')
-    plt.show()
-        # test_acc
-    plt.boxplot(test_prec)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Test Prec')
-    plt.show()
-        # test_acc
-    plt.boxplot(train_prec)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Train Prec')
-    plt.show()
-        # test_acc
-    plt.boxplot(etrain_prec)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Extra-Training Prec')
-    plt.show()
-        # test_acc
-    plt.boxplot(test_rec)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Test Rec')
-    plt.show()
-        # test_acc
-    plt.boxplot(train_rec)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Train Rec')
-    plt.show()
-        # test_acc
-    plt.boxplot(etrain_rec)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Extra-Training Rec')
-    plt.show()
-        # test_acc
-    plt.boxplot(test_f1)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Test F1')
-    plt.show()
-        # test_acc
-    plt.boxplot(train_f1)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Train F1')
-    plt.show()
-        # test_acc
-    plt.boxplot(etrain_f1)
-    plt.xticks(np.arange(len(labels))+1,labels)
-    plt.title('Extra-Training F1')
-    plt.show()
+plt.boxplot(train_acc)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Train Acc')
+plt.show()
+    # test_acc
+plt.boxplot(etrain_acc)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Extra-Training Acc')
+plt.show()
+    # test_acc
+plt.boxplot(test_prec)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Test Prec')
+plt.show()
+    # test_acc
+plt.boxplot(train_prec)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Train Prec')
+plt.show()
+    # test_acc
+plt.boxplot(etrain_prec)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Extra-Training Prec')
+plt.show()
+    # test_acc
+plt.boxplot(test_rec)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Test Rec')
+plt.show()
+    # test_acc
+plt.boxplot(train_rec)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Train Rec')
+plt.show()
+    # test_acc
+plt.boxplot(etrain_rec)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Extra-Training Rec')
+plt.show()
+    # test_acc
+plt.boxplot(test_f1)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Test F1')
+plt.show()
+    # test_acc
+plt.boxplot(train_f1)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Train F1')
+plt.show()
+    # test_acc
+plt.boxplot(etrain_f1)
+plt.xticks(np.arange(len(labels))+1,labels)
+plt.title('Extra-Training F1')
+plt.show()

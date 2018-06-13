@@ -113,5 +113,5 @@ def prepare_pullbacks(input_folder='DICOM_FRA',filename_labels='labels.txt',n_fe
     print(Y.shape)
     return X,Y
 
-prepare_pullbacks(input_folder='DICOM_FRA',filename_labels=name_file_labels,pixels_in=512, pixels_out=100)
+prepare_pullbacks(input_folder='DICOM_FRA',filename_labels=name_file_labels,pixels_in=512, pixels_out=128)
 

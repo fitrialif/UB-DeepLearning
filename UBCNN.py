@@ -107,7 +107,7 @@ class UBCNN(object):
 	    	    featurewise_std_normalization=False,  # divide inputs by std of the dataset
 	    	    samplewise_std_normalization=False,  # divide each input by its std
 	    	    zca_whitening=False,  # apply ZCA whitening
-	    	    rotation_range=15,  # randomly rotate images in the range (degrees, 0 to 180)
+	    	    rotation_range=10,  # randomly rotate images in the range (degrees, 0 to 180)
 	    	    width_shift_range=0,  # randomly shift images horizontally (fraction of total width)
 	    	    height_shift_range=0,  # randomly shift images vertically (fraction of total height)
 	    	    horizontal_flip=True,  # randomly flip images
@@ -314,7 +314,8 @@ class ThomasNet_Calcio(UBCNN):
         I,J = input_shape
 
         net = Sequential()
-        net.add(Conv2D(20, (10, 10), input_shape=(I, J, 1)))
+        net.add(Conv2D(32, (10, 10), input_shape=(I, J, 1)))
+        net.add(BatchNormalization())
         net.add(Activation('relu'))
         net.add(AveragePooling2D(pool_size=(14,14)))
 
@@ -375,6 +376,92 @@ class MauNet_Calcio(UBCNN):
         self.model = net
         self.trained = False
         net.summary()
+class MauNet_Calcio_2L(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet 2L for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10,dropout=0.4):
+        I,J = input_shape
+
+        net = Sequential()
+        net.add(Conv2D(64, (3, 3), input_shape=(I, J, 1)))
+        net.add(Activation('relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.1))
+
+        net.add(Conv2D(32, (3, 3)))
+        net.add(Activation('relu'))
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.1))
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+
+        net.add(Dense(n_target_feat))
+        net.add(Activation('sigmoid'))
+
+        print("compiling model ... ")
+
+        optimizer = Adam()
+
+        net.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+class MauNet_Calcio_5L_BN(UBCNN):
+
+    def __init__(self):
+        print("creating MauNet 3L with BN for Calcio classification ... ")
+        print("... MauNet created!")
+
+    def compile_model(self,input_shape=(128,128),n_target_feat=1,nfilters=20,fsize=10,dropout=0.4):
+        I,J = input_shape
+        net = Sequential()
+
+        net.add(Conv2D(64, (3, 3), input_shape=(I, J, 1), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.4))
+
+        net.add(Conv2D(64, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.4))
+
+        net.add(Conv2D(32, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.4))
+
+        net.add(Conv2D(32, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.4))
+
+        net.add(Conv2D(16, (3, 3), activation='relu'))
+        net.add(BatchNormalization())
+        net.add(MaxPooling2D(pool_size=(2, 2)))
+        net.add(Dropout(0.4))
+
+        net.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        
+        net.add(Dense(n_target_feat))
+        net.add(Activation('sigmoid'))
+
+        net.compile(loss='binary_crossentropy',
+                      optimizer='Adam',
+                      metrics=['accuracy'])
+
+        print("... compiled! (details below)")
+
+        self.model = net
+        self.trained = False
+        net.summary()
+
 class MauNet_Calcio_3L(UBCNN):
 
     def __init__(self):
@@ -389,7 +476,7 @@ class MauNet_Calcio_3L(UBCNN):
         net.add(MaxPooling2D(pool_size=(2, 2)))
         net.add(Dropout(dropout))
 
-        tpt = nfilters/2
+        tpt = nfilters*2
 
         net.add(Conv2D(tpt, (3, 3), activation='relu'))
         net.add(MaxPooling2D(pool_size=(2, 2)))
@@ -429,7 +516,7 @@ class MauNet_Calcio_3L_BN(UBCNN):
         net.add(MaxPooling2D(pool_size=(2, 2)))
         net.add(Dropout(dropout))
 
-        tpt = nfilters/2
+        tpt = nfilters*2
 
         net.add(Conv2D(tpt, (3, 3), activation='relu'))
         net.add(BatchNormalization())
@@ -475,7 +562,7 @@ class MauNet_Calcio_4L(UBCNN):
         net.add(MaxPooling2D(pool_size=(2, 2)))
         net.add(Dropout(dropout))
 
-        tpt = nfilters/2
+        tpt = nfilters*2
 
         net.add(Conv2D(tpt, (3, 3), activation='relu'))
         net.add(MaxPooling2D(pool_size=(2, 2)))
@@ -519,7 +606,7 @@ class MauNet_Calcio_4L_BN(UBCNN):
         net.add(MaxPooling2D(pool_size=(2, 2)))
         net.add(Dropout(dropout))
 
-        tpt = nfilters/2
+        tpt = nfilters*2
 
         net.add(Conv2D(tpt, (3, 3), activation='relu'))
         net.add(BatchNormalization())

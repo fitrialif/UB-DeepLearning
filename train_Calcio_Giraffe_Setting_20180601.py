@@ -16,24 +16,29 @@ import sys
 import csv
 import os
 
+#Network Metadata
+prefix = str(sys.argv[1])
+
 np.random.seed(42)
 
 reader = ImageReader()
 
 save_dir = os.path.join(os.getcwd(), 'saved_models')
-model_name = 'UBCNN_Calcio_trained_model.h5'
 
 name_pullbacks_x = 'PULLBACKS_X_GIRAFFE.csv'
 name_pullbacks_y = 'PULLBACKS_Y_GIRAFFE.csv'
 name_pullbacks_names = 'PULLBACKS_NAMES_GIRAFFE.csv'
 allress = []
-print('PreRead..')
-X,Y,start_indices,end_indices = reader.read_pullbacks_from_CSV(names=name_pullbacks_names,file_x=name_pullbacks_x,file_y=name_pullbacks_y)
+print('Readed Started..')
+
+#Reader, size of reader defined here
+X,Y,start_indices,end_indices = reader.read_pullbacks_from_CSV(names=name_pullbacks_names,file_x=name_pullbacks_x,file_y=name_pullbacks_y,dim=128)
 print('Read Complete..')
 
 
 X = X/255.0
-Y = Y[:,2]#CALCIO
+#Calcium Label Index
+Y = Y[:,2]
 
 N_pullbacks = len(start_indices)
 
@@ -41,14 +46,12 @@ print(N_pullbacks)
 
 indices_pullbacks = range(N_pullbacks)
 
-N_folds = 2
+N_folds = 10
 kf = KFold(n_splits=N_folds, shuffle=True, random_state=42)
 
 tr_epochs = 1
 
 current_fold = 0
-
-basename ='KFOLDNETS_GIRAFFE_SETTING_CALCIO_RSNET1_'
 
 ts_accs = np.zeros((10,tr_epochs))
 tr_accs = np.zeros((10,tr_epochs))
@@ -57,8 +60,14 @@ recalls = np.zeros((10,tr_epochs))
 
 counter = 0
 
-for train_pullbacks, test_pullbacks in kf.split(indices_pullbacks):
+#'3-BN-32-04'
+basename ='UB_Calcium_' + prefix
+name_performance_csv = '_UB_Calcium_PreRec.csv'
+model_name = prefix +'UBCNN_Calcio_trained_model.h5'
+name_performance_csv = prefix + name_performance_csv
 
+#Split Data for Cross-Fold
+for train_pullbacks, test_pullbacks in kf.split(indices_pullbacks):
 	frame_tr_indices_cnn = None
 	frame_tr_indices_rnn = None
 	frame_test_indices = None
@@ -96,28 +105,24 @@ for train_pullbacks, test_pullbacks in kf.split(indices_pullbacks):
 	X_test = X[frame_test_indices,:]
 	y_test = Y[frame_test_indices]
 
-	print("SHAPES: ")
-	print(X_train_cnn.shape)
-	print(y_train_cnn.shape)
-	print(X_test.shape)
-	print(y_test.shape)
-
-	net = MauNet_Calcio_4L_BN()
-
+	#Network Definition
+	net = MauNet_Calcio_3L_BN()
 	smetrics = SingleLabelMonitor()
+	net.compile_model(input_shape=(128,128),n_target_feat=1,dropout=0.4,nfilters=32)
 
-	net.compile_model(input_shape=(128,128),n_target_feat=1)
+	results_file = basename +'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
+	filename = basename +'_%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
+
+	print 'Experiment: ' + filename + ' Fold: ' + str(current_fold)
 
 	net_name = 'SingleNet_Calcio_30CLEAN_UNION_FOLD%d'%current_fold
 	target_vars = ['calcio']
 
-	filename = basename+'%dEp_Fold%d_Of_%d.model'%(tr_epochs,current_fold,N_folds)
-
-	history = net.train_model_DA(X_train_cnn, y_train_cnn, X_val=X_test, y_val=y_test, batch_size=16, n_epochs=tr_epochs,save_name=filename,callbacks=[smetrics])
+	#Training method definition train_model for normal training and train_model_DA with real-time data augmentation
+	history = net.train_model_DA(X_train_cnn, y_train_cnn, X_val=X_test, y_val=y_test, batch_size=8, n_epochs=tr_epochs,save_name=filename,callbacks=[smetrics])
 
 	history_tr_acc = history.history['acc']
 	history_val_acc = history.history['val_acc']
-
 
 	shape_X_train = X_train_cnn.shape
 	shape_Y_train = y_train_cnn.shape
@@ -150,22 +155,43 @@ for train_pullbacks, test_pullbacks in kf.split(indices_pullbacks):
 	precisions[counter,:] = np.array(smetrics.prec_val)
 	recalls[counter,:] = np.array(smetrics.rec_val)
 
+	allress = np.dstack((ts_accs[:,0],precisions[:,0],recalls[:,0]))
+	print allress
+
 	counter +=1
 
 	results = ExperimentResults(train_error,test_error,history_tr_acc,history_val_acc,others)
 
-	results_file = basename+'%dEp_Fold%d_Of_%d.results'%(tr_epochs,current_fold,N_folds)
-
 	with open(results_file, 'wb') as output:
 		pickle.dump(results, output)
 
-
+	#Save trained model
 	if not os.path.isdir(save_dir):
 	    os.makedirs(save_dir)
-	model_path = os.path.join(save_dir, str(current_fold)+model_name)
+	model_path = os.path.join(save_dir, str(current_fold)+'_'+model_name)
 	net.save(model_path)
 	print('Saved trained model at %s ' % model_path)
 
+	#Saves Experiment Test index
+	teststr = str(current_fold)+'_TEST_'+model_name+'.csv'
+	teststr_path = os.path.join(save_dir, teststr)
+	with open(teststr_path,"w+") as my_csv:
+	    csvWriter = csv.writer(my_csv,delimiter=',')
+	    for tesx in test_pullbacks:
+	    	csvWriter.writerow([tesx])
+
+	#Saves Experiment Train index
+	teststr = str(current_fold)+'_TRAIN_'+model_name+'.csv'
+	teststr_path = os.path.join(save_dir, teststr)
+	with open(teststr_path,"w+") as my_csv:
+	    csvWriter = csv.writer(my_csv,delimiter=',')
+	    for tesx in train_pullbacks_cnn:
+	    	csvWriter.writerow([tesx])
 	current_fold+=1
 
 	del net
+
+#Saves Experiment Precision and Recall
+with open(name_performance_csv,"w+") as my_csv:
+    csvWriter = csv.writer(my_csv,delimiter=',')
+    csvWriter.writerows(allress[0])
