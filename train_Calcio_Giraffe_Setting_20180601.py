@@ -49,7 +49,7 @@ indices_pullbacks = range(N_pullbacks)
 N_folds = 10
 kf = KFold(n_splits=N_folds, shuffle=True, random_state=42)
 
-tr_epochs = 1
+tr_epochs = 100
 
 current_fold = 0
 
